@@ -1,24 +1,48 @@
 import streamlit as st
 
-# Ana ekran
+# Ana ekran başlığı ve düzeni
 def ana_ekran():
-    st.title("Hoşgeldiniz")
-    st.write("Lütfen bir seçenek seçin:")
-    secim = st.radio("Seçenekler", ["Yorum Kategorilendirme", "Boy ve Kilo Endeksi"])
+    st.set_page_config(page_title="Hoşgeldiniz", page_icon=":guardsman:", layout="wide")
+    st.title("Hoşgeldiniz!")
+    
+    st.markdown("""
+    <style>
+        .title {
+            font-size: 40px;
+            color: #2a9d8f;
+            font-weight: bold;
+        }
+        .subheader {
+            font-size: 30px;
+            color: #264653;
+        }
+        .intro {
+            font-size: 18px;
+            color: #f1faee;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
+    st.markdown('<p class="title">Ana Ekran</p>', unsafe_allow_html=True)
+    st.markdown('<p class="intro">Streamlit uygulamanıza hoş geldiniz! Aşağıdaki seçeneklerden birini seçin:</p>', unsafe_allow_html=True)
+
+    # Sol menü (Seçim yapma)
+    secim = st.selectbox("Seçim Yapın", ["Yorum Kategorilendirme", "Boy ve Kilo Endeksi"])
+
+    # Seçime göre yönlendirme
     if secim == "Yorum Kategorilendirme":
         yorum_kategorilendirme()
     elif secim == "Boy ve Kilo Endeksi":
         boy_ve_kilo_endeksi()
 
-# Yorum kategorilendirme fonksiyonu
+# Yorum Kategorilendirme sayfası
 def yorum_kategorilendirme():
-    st.header("Yorum Kategorilendirme")
+    st.markdown('<p class="subheader">Yorum Kategorilendirme</p>', unsafe_allow_html=True)
     st.write("Burada yorumları kategorilendiriyoruz...")  # Burada yorum.py kodları olacak
 
-# Boy ve Kilo Endeksi fonksiyonu
+# Boy ve Kilo Endeksi sayfası
 def boy_ve_kilo_endeksi():
-    st.header("Boy ve Kilo Endeksi")
+    st.markdown('<p class="subheader">Boy ve Kilo Endeksi</p>', unsafe_allow_html=True)
     
     # Kullanıcıdan boy ve kilo girişi
     boy = st.number_input("Boyunuzu girin (metre cinsinden):", min_value=0.0, format="%.2f")
