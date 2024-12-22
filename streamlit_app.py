@@ -1,5 +1,23 @@
 import streamlit as st
 
+# CSS için stil ekleme
+st.markdown("""
+    <style>
+        body {
+            background-color: #f0f4f8;  # Genel arka plan rengi
+            color: #333333;  # Yazı rengi
+            font-family: Arial, sans-serif;  # Yazı tipi
+        }
+        .sidebar .sidebar-content {
+            background-color: #f7f7f7;  # Sol panelin arka plan rengi
+        }
+        .stButton>button {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # Ana sayfa için ekran
 def main_page():
     st.title("Hoşgeldiniz!")
