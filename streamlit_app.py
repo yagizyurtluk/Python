@@ -1,87 +1,49 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-import sqlite3
-import datetime
-import string
 
-# Başlık
-st.title("Hoşgeldiniz")
+# Ana ekran
+def ana_ekran():
+    st.title("Hoşgeldiniz")
+    st.write("Lütfen bir seçenek seçin:")
+    secim = st.radio("Seçenekler", ["Yorum Kategorilendirme", "Boy ve Kilo Endeksi"])
 
-# Sol panelden hangi sayfa seçileceğini belirlemek
-page = st.sidebar.selectbox("Sayfa Seçin", ["Ana Sayfa", "Yorum Kategorilendirme"])
+    if secim == "Yorum Kategorilendirme":
+        yorum_kategorilendirme()
+    elif secim == "Boy ve Kilo Endeksi":
+        boy_ve_kilo_endeksi()
 
-# Veritabanı bağlantısı
-conn = sqlite3.connect('trendyorum.sqlite3')
-c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS testler(yorum TEXT, sonuc TEXT, zaman TEXT)")
-conn.commit()
+# Yorum kategorilendirme fonksiyonu
+def yorum_kategorilendirme():
+    st.header("Yorum Kategorilendirme")
+    st.write("Burada yorumları kategorilendiriyoruz...")  # Burada yorum.py kodları olacak
 
-# Yorum temizleme fonksiyonu
-def temizle(sutun):
-    stopwords = ['fakat', 'lakin', 'ancak', 'acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey']
-    sutun = sutun.lower()
-    for sembol in string.punctuation:
-        sutun = sutun.replace(sembol, " ")
-    for stopword in stopwords:
-        sutun = sutun.replace(f" {stopword} ", " ")
-    return sutun
+# Boy ve Kilo Endeksi fonksiyonu
+def boy_ve_kilo_endeksi():
+    st.header("Boy ve Kilo Endeksi")
+    
+    # Kullanıcıdan boy ve kilo girişi
+    boy = st.number_input("Boyunuzu girin (metre cinsinden):", min_value=0.0, format="%.2f")
+    kilo = st.number_input("Kilonuzu girin (kg cinsinden):", min_value=0)
 
-# Yorum Kategorilendirme Sayfası
-if page == "Yorum Kategorilendirme":
-    st.subheader("Yorum Kategorilendirme")
-
-    # Veri yükleme
-    df = pd.read_csv('yorum.csv.zip', on_bad_lines='skip', delimiter=";")
-    df['Metin'] = df['Metin'].apply(temizle)
-
-    # Özellik ve hedef değişken
-    cv = CountVectorizer(max_features=300)
-    X = cv.fit_transform(df['Metin']).toarray()
-    y = df['Durum']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, random_state=42)
-
-    # Kullanıcı girişi
-    yorum = st.text_area('Yorumunuzu yazın:')
-    btn = st.button('Kategorilendir')
-
-    if btn:
-        # Model eğitimi
-        rf = RandomForestClassifier()
-        model = rf.fit(X_train, y_train)
-        skor = model.score(X_test, y_test)
-
-        # Yorum tahmini
-        tahmin = cv.transform([yorum]).toarray()
-        kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
-        sonuc = model.predict(tahmin)
-        s = kat.get(sonuc[0])
-
+    if boy > 0 and kilo > 0:
+        # BMI hesaplaması
+        bmi = kilo / (boy ** 2)
+        
+        # BMI değerlendirmesi
+        if bmi < 18.5:
+            degerlendirme = "Zayıf"
+        elif 18.5 <= bmi < 24.9:
+            degerlendirme = "Normal"
+        elif 25 <= bmi < 29.9:
+            degerlendirme = "Fazla Kilolu"
+        else:
+            degerlendirme = "Obez"
+        
         # Sonuçları gösterme
-        st.subheader(f"Tahmin Edilen Kategori: {s}")
-        st.write(f"Model Skoru: {skor:.2f}")
+        st.write(f"BMI Değeriniz: {bmi:.2f}")
+        st.write(f"Durum: {degerlendirme}")
+    else:
+        st.write("Lütfen geçerli bir boy ve kilo girin.")
 
-        # Sonuçları veritabanına kaydetme
-        zaman = str(datetime.datetime.now())
-        c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
-        conn.commit()
-
-    # Geçmiş test sonuçları
-    c.execute('SELECT * FROM testler')
-    testler = c.fetchall()
-    st.write("Geçmiş Testler:")
-    st.table(testler)
-
-    # Önbellek temizleme
-    if st.button("Önbelleği Temizle"):
-        c.execute("DELETE FROM testler")
-        conn.commit()
-        st.success("Önbellek temizlendi.")
-
-# Ana Sayfa
-elif page == "Ana Sayfa":
-    st.subheader("Ana Sayfaya Hoşgeldiniz!")
-    st.write("Buradan istediğiniz sayfayı seçebilirsiniz.")
+# Ana ekranı başlatma
+if __name__ == "__main__":
+    ana_ekran()
