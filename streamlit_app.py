@@ -3,6 +3,7 @@ import streamlit as st
 # Ana sayfa için ekran
 def main_page():
     st.title("Hoşgeldiniz!")
+    dt.header('Ana Ekran')
     st.write("Burada projeyi yönetebilirsiniz. Lütfen sol taraftan seçenekleri kullanarak devam edin.")
 
 # Yorum kısmı
