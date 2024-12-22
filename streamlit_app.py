@@ -2,11 +2,15 @@ import streamlit as st
 
 # Ana ekran başlığı ve düzeni
 def ana_ekran():
-    st.set_page_config(page_title="Hoşgeldiniz", page_icon=":guardsman:", layout="wide")
-    st.title("Hoşgeldiniz!")
+    st.set_page_config(page_title="Hoşgeldiniz", page_icon=":guardsman:", layout="centered")
     
+    # Ana sayfa renk ve tema düzeni
     st.markdown("""
     <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Arial', sans-serif;
+        }
         .title {
             font-size: 40px;
             color: #2a9d8f;
@@ -20,13 +24,19 @@ def ana_ekran():
             font-size: 18px;
             color: #f1faee;
         }
+        .box {
+            border: 2px solid #2a9d8f;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+        }
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<p class="title">Ana Ekran</p>', unsafe_allow_html=True)
+    st.markdown('<p class="title">Hoşgeldiniz!</p>', unsafe_allow_html=True)
     st.markdown('<p class="intro">Streamlit uygulamanıza hoş geldiniz! Aşağıdaki seçeneklerden birini seçin:</p>', unsafe_allow_html=True)
 
-    # Sol menü (Seçim yapma)
+    # Seçim yapma (sayfa içeriğine göre)
     secim = st.selectbox("Seçim Yapın", ["Yorum Kategorilendirme", "Boy ve Kilo Endeksi"])
 
     # Seçime göre yönlendirme
