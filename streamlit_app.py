@@ -1,4 +1,5 @@
 import streamlit as st
+image_url = "https://apod.nasa.gov/apod/image/1811/Jupiter2Cassini_960.jpg"
 
 # Arkaplana Jüpiter resmini ekleme
 st.markdown(
