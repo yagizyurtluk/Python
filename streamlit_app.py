@@ -15,9 +15,16 @@ def yorum_page():
     btn = st.button('Yorumu Kategorilendir')
 
     if btn:
-        # Yorum analizi için mevcut model ve işlemler yapılacak.
-        st.subheader("Yorum Kategorisi: Olumlu / Olumsuz / Nötr")
-        st.write("Model Skoru: 85%")  # Örnek skor
+        # Burada yorum analizi için bir model çalıştırılacak.
+        # Örneğin, basit bir model skoru ve kategorisi ekleyelim
+        if yorum.strip() == "":
+            st.error("Lütfen bir yorum giriniz.")
+        else:
+            # Model sonuçları burada olacak
+            sonuc = "Olumlu"  # Örnek sonuç
+            skor = 85  # Örnek skor
+            st.subheader(f"Yorum Kategorisi: {sonuc}")
+            st.write(f"Model Skoru: {skor}%")
 
 # Sol paneldeki sayfa seçimi
 def main():
