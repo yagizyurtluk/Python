@@ -79,33 +79,68 @@ yorum = st.sidebar.text_area('Yorumunuzu yazın:', placeholder="Yorumunuzu buray
 # Ana ekranda kategori tahmini ve model sonucu
 btn = st.button('Yorumu Kategorilendir')
 
-if btn:
-    with st.spinner("Model kategoriyi tahmin ediyor..."):
-        rf = RandomForestClassifier()
-        model = rf.fit(X_train, y_train)
-        skor = model.score(X_test, y_test)
+def main_page():
+    if btn:
+        with st.spinner("Model kategoriyi tahmin ediyor..."):
+            rf = RandomForestClassifier()
+            model = rf.fit(X_train, y_train)
+            skor = model.score(X_test, y_test)
 
-        tahmin = cv.transform(np.array([yorum])).toarray()
-        kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
+            tahmin = cv.transform(np.array([yorum])).toarray()
+            kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
 
-        sonuc = model.predict(tahmin)
-        s = kat.get(sonuc[0])
-        st.subheader(f"Tahmin Edilen Kategori: {s}")
-        st.write(f"Model Skoru: {skor:.2f}")
+            sonuc = model.predict(tahmin)
+            s = kat.get(sonuc[0])
+            st.subheader(f"Tahmin Edilen Kategori: {s}")
+            st.write(f"Model Skoru: {skor:.2f}")
 
-        # Veritabanına kayıt
-        c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
+            # Veritabanına kayıt
+            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
+            conn.commit()
+            st.success("Yorum başarıyla kategorize edildi!")
+
+    # Geçmiş test sonuçlarını gösterme
+    st.sidebar.write("Geçmiş Testler:")
+    c.execute('SELECT * FROM testler')
+    testler = c.fetchall()
+    st.sidebar.table(testler)
+
+    # Önceki testleri temizleme seçeneği
+    if st.sidebar.button("Önbelleği Temizle"):
+        c.execute("DELETE FROM testler")
         conn.commit()
-        st.success("Yorum başarıyla kategorize edildi!")
+        st.sidebar.success("Önbellek temizlendi.")
 
-# Geçmiş test sonuçlarını gösterme
-st.sidebar.write("Geçmiş Testler:")
-c.execute('SELECT * FROM testler')
-testler = c.fetchall()
-st.sidebar.table(testler)
+def yorum_page():
+    st.sidebar.subheader("Yorum Kategorilendirme")
+    if btn:
+        with st.spinner("Model kategoriyi tahmin ediyor..."):
+            rf = RandomForestClassifier()
+            model = rf.fit(X_train, y_train)
+            skor = model.score(X_test, y_test)
 
-# Önceki testleri temizleme seçeneği
-if st.sidebar.button("Önbelleği Temizle"):
-    c.execute("DELETE FROM testler")
-    conn.commit()
-    st.sidebar.success("Önbellek temizlendi.")
+            tahmin = cv.transform(np.array([yorum])).toarray()
+            kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
+
+            sonuc = model.predict(tahmin)
+            s = kat.get(sonuc[0])
+            st.subheader(f"Tahmin Edilen Kategori: {s}")
+            st.write(f"Model Skoru: {skor:.2f}")
+
+            # Veritabanına kayıt
+            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
+            conn.commit()
+            st.success("Yorum başarıyla kategorize edildi!")
+
+# Ana uygulama
+def main():
+    st.sidebar.title("Sayfa Seçimi")
+    page = st.sidebar.radio("Sayfalar", ("Ana Sayfa", "Yorum Bölümü"))
+
+    if page == "Ana Sayfa":
+        main_page()
+    elif page == "Yorum Bölümü":
+        yorum_page()
+
+if __name__ == "__main__":
+    main()
