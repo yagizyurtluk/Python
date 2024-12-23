@@ -1,11 +1,10 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
+import sqlite3
+import datetime
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-import sqlite3
-import datetime
+import pandas as pd
 
 # Menü Sayfası
 def menu_page():
