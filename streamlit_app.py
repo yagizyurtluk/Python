@@ -10,7 +10,7 @@ import datetime
 
 # Arka plan ekleme fonksiyonu
 def add_background(image_url):
-    # Arka planı her seferinde güncelleyen stil kodu
+    # Arka planı her defasında güncelleyen stil kodu
     st.markdown(
         f"""
         <style>
@@ -26,7 +26,7 @@ def add_background(image_url):
     )
 
 # Arka plan görsel URL'si
-background_url = "https://upload.wikimedia.org/wikipedia/commons/4/4d/Saturn_during_Equinox.jpg"  # Satürn görseli
+background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"  # Örneğin Jüpiter görseli
 add_background(background_url)
 
 # Uygulama başlığı
