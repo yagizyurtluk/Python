@@ -34,6 +34,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Başlık
 st.title("Metin Analizi ve Kategorilendirme Uygulaması")
 
 # SQLite veritabanı bağlantısı
@@ -43,7 +44,7 @@ c = conn.cursor()
 c.execute("CREATE TABLE IF NOT EXISTS testler(yorum TEXT, sonuc TEXT, zaman TEXT)")
 conn.commit()
 
-# Veriyi yükleme ve temizleme fonksiyonu
+# Yorumları temizleme fonksiyonu
 def temizle(sutun):
     stopwords = ['fakat', 'lakin', 'ancak', 'acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç',
                  'birşey', 'biz', 'bu', 'çok', 'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem',
@@ -88,6 +89,7 @@ if btn:
     st.subheader(f"Tahmin Edilen Kategori: {s}")
     st.write(f"Model Skoru: {skor:.2f}")
 
+    # Veritabanına kaydetme
     c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
     conn.commit()
 
