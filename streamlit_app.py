@@ -11,61 +11,9 @@ import string
 # Başlık
 st.title("Metin Analizi ve Kategorilendirme")
 
-# Sol menü
-menu = ["Menü", "Yorum"]
-secim = st.sidebar.radio("Seçim Yapın", menu)
-
-# Sol menü
+# Sol menü (Yalnızca bir kez tanımlandı)
 menu = ["Menü", "Yorum", "Game"]  # Yeni seçenek ekledik
 secim = st.sidebar.radio("Seçim Yapın", menu)
-
-# Menüye göre içerik göster
-if secim == "Menü":
-    st.subheader("Menü Seçimi")
-    st.write("Burada menü ile ilgili seçenekler ve açıklamalar olacak.")
-    # Burada istediğiniz menü seçeneklerini ekleyebilirsiniz.
-
-elif secim == "Yorum":
-    # Yorum kısmı kodu burada devam ediyor...
-    yorum = st.text_area('Yorumunuzu yazın:')
-    btn = st.button('Kategorilendir')
-
-    if btn:
-        # Yorum tahmini işlemi devam ediyor...
-        tahmin = cv.transform([yorum]).toarray()
-        kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
-        sonuc = model.predict(tahmin)
-        s = kat.get(sonuc[0])
-
-        # Sonuçları gösterme
-        st.subheader(f"Tahmin Edilen Kategori: {s}")
-
-        # Model skoru
-        skor = model.score(X_test, y_test)
-        st.write(f"Model Skoru: {skor:.2f}")
-
-        # Sonuçları veritabanına kaydetme
-        zaman = str(datetime.datetime.now())
-        c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
-        conn.commit()
-
-    # Geçmiş test sonuçları
-    c.execute('SELECT * FROM testler')
-    testler = c.fetchall()
-    st.write("Geçmiş Testler:")
-    st.table(testler)
-
-    # Önbellek temizleme
-    if st.button("Önbelleği Temizle"):
-        c.execute("DELETE FROM testler")
-        conn.commit()
-        st.success("Önbellek temizlendi.")
-
-elif secim == "Game":
-    # Yeni Game slotunun içeriği
-    st.subheader("Game Slotu")
-    st.write("Burada oyun ile ilgili seçenekler olacak.")
-    # Buraya oyunla ilgili istediğiniz içerikleri ekleyebilirsiniz.
 
 # Veritabanı bağlantısını aç
 conn = sqlite3.connect('trendyorum.sqlite3')
@@ -139,3 +87,9 @@ elif secim == "Yorum":
         c.execute("DELETE FROM testler")
         conn.commit()
         st.success("Önbellek temizlendi.")
+
+elif secim == "Game":
+    # Yeni Game slotunun içeriği
+    st.subheader("Game Slotu")
+    st.write("Burada oyun ile ilgili seçenekler olacak.")
+    # Buraya oyunla ilgili istediğiniz içerikleri ekleyebilirsiniz.
