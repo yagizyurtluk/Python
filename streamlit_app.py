@@ -22,6 +22,7 @@ conn = sqlite3.connect('trendyorum.sqlite3')
 c = conn.cursor()
 c.execute("CREATE TABLE IF NOT EXISTS testler(yorum TEXT, sonuc TEXT, zaman TEXT)")
 conn.commit()
+conn.close()
 
 # Yorum temizleme fonksiyonu
 def temizle(sutun):
