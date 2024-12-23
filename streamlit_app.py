@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+import sqlite3
 import datetime
 
 # Menü Sayfası
@@ -22,6 +23,12 @@ def yorum_kontrol_page():
     yorum = st.text_area("Yorumunuzu yazın:")
     btn = st.button('Kategorilendir')
 
+    # SQLite veritabanı bağlantısı
+    conn = sqlite3.connect('trendyorum.sqlite3')
+    c = conn.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS testler(yorum TEXT, sonuc TEXT, zaman TEXT)")
+    conn.commit()
+
     if btn:
         if yorum.strip() == "":
             st.warning("Lütfen yorumunuzu yazın.")
@@ -36,8 +43,26 @@ def yorum_kontrol_page():
             st.subheader(f"Tahmin Edilen Kategori: {kategori}")
 
             # Zaman damgası
-            zaman = datetime.datetime.now()
-            st.write(f"Analiz Yapılma Zamanı: {zaman.strftime('%Y-%m-%d %H:%M:%S')}")
+            zaman = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            st.write(f"Analiz Yapılma Zamanı: {zaman}")
+
+            # Yorum ve sonuç veritabanına ekleme
+            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, kategori, zaman))
+            conn.commit()
+
+            # Geçmiş test sonuçlarını gösterme
+            c.execute('SELECT * FROM testler')
+            testler = c.fetchall()
+            st.write("Geçmiş Testler:")
+            st.table(testler)
+
+            # Önbelleği Temizleme
+            if st.button("Önbelleği Temizle"):
+                c.execute("DELETE FROM testler")
+                conn.commit()
+                st.success("Önbellek temizlendi.")
+
+    conn.close()
 
 # Boy-Kilo Endeksi Sayfası
 def boy_kilo_endeksi_page():
