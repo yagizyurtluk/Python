@@ -10,15 +10,16 @@ import datetime
 
 # Arka plan ekleme fonksiyonu
 def add_background(image_url):
-    # Arka planı her defasında güncelleyen stil kodu
+    # Görselin boyutunu ayarlayacak CSS kodu
     st.markdown(
         f"""
         <style>
         .stApp {{
             background: url("{image_url}");
-            background-size: cover;
+            background-size: contain;  /* Görselin boyutunu ekrana sığacak şekilde ayarlama */
             background-repeat: no-repeat;
             background-attachment: fixed;
+            background-position: center center; /* Görselin merkezi ekranda */
         }}
         </style>
         """,
@@ -26,7 +27,7 @@ def add_background(image_url):
     )
 
 # Arka plan görsel URL'si (Jüpiter gezegeni görseli)
-background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"  # Jüpiter gezegeninin görseli
+background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"
 add_background(background_url)
 
 # Uygulama başlığı
@@ -78,33 +79,36 @@ def yorum_page():
     btn = st.button('Kategorilendir')
 
     if btn:
-        rf = RandomForestClassifier()
-        model = rf.fit(X_train, y_train)
-        skor = model.score(X_test, y_test)
+        if yorum.strip() == "":  # Yorum boş bırakıldığında uyarı
+            st.warning("Lütfen yorumunuzu yazın.")
+        else:
+            rf = RandomForestClassifier()
+            model = rf.fit(X_train, y_train)
+            skor = model.score(X_test, y_test)
 
-        tahmin = cv.transform(np.array([yorum])).toarray()
-        kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
+            tahmin = cv.transform(np.array([yorum])).toarray()
+            kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
 
-        sonuc = model.predict(tahmin)
-        s = kat.get(sonuc[0])
-        st.subheader(f"Tahmin Edilen Kategori: {s}")
-        st.write(f"Model Skoru: {skor:.2f}")
+            sonuc = model.predict(tahmin)
+            s = kat.get(sonuc[0])
+            st.subheader(f"Tahmin Edilen Kategori: {s}")
+            st.write(f"Model Skoru: {skor:.2f}")
 
-        # Veritabanına ekleme
-        c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
-        conn.commit()
-
-        # Geçmiş test sonuçlarını gösterme
-        c.execute('SELECT * FROM testler')
-        testler = c.fetchall()
-        st.write("Geçmiş Testler:")
-        st.table(testler)
-
-        # Önbelleği Temizleme
-        if st.button("Önbelleği Temizle"):
-            c.execute("DELETE FROM testler")
+            # Veritabanına ekleme
+            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
             conn.commit()
-            st.success("Önbellek temizlendi.")
+
+            # Geçmiş test sonuçlarını gösterme
+            c.execute('SELECT * FROM testler')
+            testler = c.fetchall()
+            st.write("Geçmiş Testler:")
+            st.table(testler)
+
+            # Önbelleği Temizleme
+            if st.button("Önbelleği Temizle"):
+                c.execute("DELETE FROM testler")
+                conn.commit()
+                st.success("Önbellek temizlendi.")
 
 # Ana uygulama
 def main():
