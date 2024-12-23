@@ -25,8 +25,8 @@ def add_background(image_url):
         unsafe_allow_html=True
     )
 
-# Arka plan görsel URL'si
-background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"  # Örneğin Jüpiter görseli
+# Arka plan görsel URL'si (Jüpiter gezegeni görseli)
+background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"  # Jüpiter gezegeninin görseli
 add_background(background_url)
 
 # Uygulama başlığı
