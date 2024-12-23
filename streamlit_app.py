@@ -11,6 +11,10 @@ import string
 # Başlık
 st.title("Metin Analizi ve Kategorilendirme")
 
+# Sol menü
+menu = ["Menü", "Yorum"]
+secim = st.sidebar.radio("Seçim Yapın", menu)
+
 # Veritabanı bağlantısını aç
 conn = sqlite3.connect('trendyorum.sqlite3')
 c = conn.cursor()
@@ -42,37 +46,44 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, random
 rf = RandomForestClassifier()
 model = rf.fit(X_train, y_train)
 
-# Kullanıcı girişi
-yorum = st.text_area('Yorumunuzu yazın:')
-btn = st.button('Kategorilendir')
+# Menüye göre içerik göster
+if secim == "Menü":
+    st.subheader("Menü Seçimi")
+    st.write("Burada menü ile ilgili seçenekler ve açıklamalar olacak.")
+    # Burada istediğiniz menü seçeneklerini ekleyebilirsiniz.
 
-if btn:
-    # Yorum tahmini
-    tahmin = cv.transform([yorum]).toarray()
-    kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
-    sonuc = model.predict(tahmin)
-    s = kat.get(sonuc[0])
+elif secim == "Yorum":
+    # Kullanıcı girişi
+    yorum = st.text_area('Yorumunuzu yazın:')
+    btn = st.button('Kategorilendir')
 
-    # Sonuçları gösterme
-    st.subheader(f"Tahmin Edilen Kategori: {s}")
+    if btn:
+        # Yorum tahmini
+        tahmin = cv.transform([yorum]).toarray()
+        kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
+        sonuc = model.predict(tahmin)
+        s = kat.get(sonuc[0])
 
-    # Model skoru
-    skor = model.score(X_test, y_test)
-    st.write(f"Model Skoru: {skor:.2f}")
+        # Sonuçları gösterme
+        st.subheader(f"Tahmin Edilen Kategori: {s}")
 
-    # Sonuçları veritabanına kaydetme
-    zaman = str(datetime.datetime.now())
-    c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
-    conn.commit()
+        # Model skoru
+        skor = model.score(X_test, y_test)
+        st.write(f"Model Skoru: {skor:.2f}")
 
-# Geçmiş test sonuçları
-c.execute('SELECT * FROM testler')
-testler = c.fetchall()
-st.write("Geçmiş Testler:")
-st.table(testler)
+        # Sonuçları veritabanına kaydetme
+        zaman = str(datetime.datetime.now())
+        c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
+        conn.commit()
 
-# Önbellek temizleme
-if st.button("Önbelleği Temizle"):
-    c.execute("DELETE FROM testler")
-    conn.commit()
-    st.success("Önbellek temizlendi.")
+    # Geçmiş test sonuçları
+    c.execute('SELECT * FROM testler')
+    testler = c.fetchall()
+    st.write("Geçmiş Testler:")
+    st.table(testler)
+
+    # Önbellek temizleme
+    if st.button("Önbelleği Temizle"):
+        c.execute("DELETE FROM testler")
+        conn.commit()
+        st.success("Önbellek temizlendi.")
