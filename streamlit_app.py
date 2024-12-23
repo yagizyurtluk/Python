@@ -41,8 +41,12 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("Metin Analizi ve Kategorilendirme Uygulaması")
-st.write("Yorumları girerek, onları analiz edip kategorize edebilirsiniz. Denemek için bir yorum yazın.")
+# Sol panel başlığı
+st.sidebar.title("Metin Analizi ve Kategorilendirme Uygulaması")
+
+# Kullanıcıdan yorum alma ve model işlemleri
+st.title("Yorum Kategorilendirme")
+st.write("Yorumlarınızı girerek kategorisini tahmin edebilirsiniz. Lütfen aşağıdaki alana bir yorum yazın.")
 
 # SQLite veritabanı bağlantısı
 zaman = str(datetime.datetime.now())
@@ -79,8 +83,10 @@ X = cv.fit_transform(df['Metin']).toarray()
 y = df['Durum']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, random_state=42)
 
-# Kullanıcı girdisi
-yorum = st.text_area('Yorumunuzu yazın:', placeholder="Yorumunuzu buraya girin...")
+# Sol panelde kullanıcı girdisi
+yorum = st.sidebar.text_area('Yorumunuzu yazın:', placeholder="Yorumunuzu buraya girin...")
+
+# Ana ekranda kategori tahmini ve model sonucu
 btn = st.button('Yorumu Kategorilendir')
 
 if btn:
@@ -103,13 +109,13 @@ if btn:
         st.success("Yorum başarıyla kategorize edildi!")
 
 # Geçmiş test sonuçlarını gösterme
+st.sidebar.write("Geçmiş Testler:")
 c.execute('SELECT * FROM testler')
 testler = c.fetchall()
-st.write("Geçmiş Testler:")
-st.table(testler)
+st.sidebar.table(testler)
 
 # Önceki testleri temizleme seçeneği
-if st.button("Önbelleği Temizle"):
+if st.sidebar.button("Önbelleği Temizle"):
     c.execute("DELETE FROM testler")
     conn.commit()
-    st.success("Önbellek temizlendi.")
+    st.sidebar.success("Önbellek temizlendi.")
