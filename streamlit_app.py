@@ -34,9 +34,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Başlık ve sol panel başlığı
+# Başlık
 st.title("Metin Analizi ve Kategorilendirme Uygulaması")
-st.sidebar.title("Yorum Kategorilendirme")
 
 # SQLite veritabanı bağlantısı
 zaman = str(datetime.datetime.now())
@@ -74,73 +73,46 @@ y = df['Durum']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, random_state=42)
 
 # Sol panelde kullanıcı girdisi
-yorum = st.sidebar.text_area('Yorumunuzu yazın:', placeholder="Yorumunuzu buraya girin...")
-
-# Ana ekranda kategori tahmini ve model sonucu
-btn = st.button('Yorumu Kategorilendir')
-
-def main_page():
-    if btn:
-        with st.spinner("Model kategoriyi tahmin ediyor..."):
-            rf = RandomForestClassifier()
-            model = rf.fit(X_train, y_train)
-            skor = model.score(X_test, y_test)
-
-            tahmin = cv.transform(np.array([yorum])).toarray()
-            kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
-
-            sonuc = model.predict(tahmin)
-            s = kat.get(sonuc[0])
-            st.subheader(f"Tahmin Edilen Kategori: {s}")
-            st.write(f"Model Skoru: {skor:.2f}")
-
-            # Veritabanına kayıt
-            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
-            conn.commit()
-            st.success("Yorum başarıyla kategorize edildi!")
-
-    # Geçmiş test sonuçlarını gösterme
-    st.sidebar.write("Geçmiş Testler:")
-    c.execute('SELECT * FROM testler')
-    testler = c.fetchall()
-    st.sidebar.table(testler)
-
-    # Önceki testleri temizleme seçeneği
-    if st.sidebar.button("Önbelleği Temizle"):
-        c.execute("DELETE FROM testler")
-        conn.commit()
-        st.sidebar.success("Önbellek temizlendi.")
-
 def yorum_page():
-    st.sidebar.subheader("Yorum Kategorilendirme")
-    if btn:
-        with st.spinner("Model kategoriyi tahmin ediyor..."):
-            rf = RandomForestClassifier()
-            model = rf.fit(X_train, y_train)
-            skor = model.score(X_test, y_test)
-
-            tahmin = cv.transform(np.array([yorum])).toarray()
-            kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
-
-            sonuc = model.predict(tahmin)
-            s = kat.get(sonuc[0])
-            st.subheader(f"Tahmin Edilen Kategori: {s}")
-            st.write(f"Model Skoru: {skor:.2f}")
-
-            # Veritabanına kayıt
-            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, zaman))
-            conn.commit()
-            st.success("Yorum başarıyla kategorize edildi!")
-
-# Ana uygulama
-def main():
     st.sidebar.title("Sayfa Seçimi")
     page = st.sidebar.radio("Sayfalar", ("Ana Sayfa", "Yorum Bölümü"))
 
-    if page == "Ana Sayfa":
-        main_page()
-    elif page == "Yorum Bölümü":
-        yorum_page()
+    if page == "Yorum Bölümü":
+        yorum = st.text_area('Yorumunuzu yazın:', placeholder="Yorumunuzu buraya girin...")
+
+        # Kategorilendirme işlemi
+        btn = st.button('Yorumu Kategorilendir')
+
+        if btn:
+            with st.spinner("Model kategoriyi tahmin ediyor..."):
+                rf = RandomForestClassifier()
+                model = rf.fit(X_train, y_train)
+                skor = model.score(X_test, y_test)
+
+                tahmin = cv.transform(np.array([yorum])).toarray()
+                kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
+
+                sonuc = model.predict(tahmin)
+                s = kat.get(sonuc[0])
+                st.subheader(f"Tahmin Edilen Kategori: {s}")
+                st.write(f"Model Skoru: {skor:.2f}")
+
+                # Veritabanına kayıt
+                c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, s, str(datetime.datetime.now())))
+                conn.commit()
+                st.success("Yorum başarıyla kategorize edildi!")
+
+        # Geçmiş test sonuçlarını gösterme
+        st.write("Geçmiş Testler:")
+        c.execute('SELECT * FROM testler')
+        testler = c.fetchall()
+        st.table(testler)
+
+        # Önceki testleri temizleme seçeneği
+        if st.button("Önbelleği Temizle"):
+            c.execute("DELETE FROM testler")
+            conn.commit()
+            st.success("Önbellek temizlendi.")
 
 if __name__ == "__main__":
-    main()
+    yorum_page()
