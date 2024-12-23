@@ -15,18 +15,17 @@ def add_background(image_url):
         <style>
         .stApp {{
             background: url("{image_url}");
-            background-size: cover;  /* Görseli ekran boyutuna göre sığdır */
+            background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            background-position: center;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-# Arka plan görsel URL'si - Satürn
-background_url = "https://upload.wikimedia.org/wikipedia/commons/9/95/Saturn_during_Equinox_-_GPN-2004-00032.jpg"
+# Arka plan görsel URL'si
+background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"
 add_background(background_url)
 
 # Uygulama başlığı
