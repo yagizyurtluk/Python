@@ -1,4 +1,3 @@
-#CommentNLP
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,7 +11,7 @@ import string
 # Başlık
 st.title("Metin Analizi ve Kategorilendirme")
 
-# Veritabanı bağlantısı
+# Veritabanı bağlantısını aç
 conn = sqlite3.connect('trendyorum.sqlite3')
 c = conn.cursor()
 c.execute("CREATE TABLE IF NOT EXISTS testler(yorum TEXT, sonuc TEXT, zaman TEXT)")
@@ -26,9 +25,10 @@ def temizle(sutun):
         sutun = sutun.replace(sembol, " ")
     for stopword in stopwords:
         sutun = sutun.replace(f" {stopword} ", " ")
+    sutun = sutun.strip()  # Fazla boşlukları temizle
     return sutun
 
-# Veri yükleme
+# Veri yükleme ve temizleme
 df = pd.read_csv('yorum.csv.zip', on_bad_lines='skip', delimiter=";")
 df['Metin'] = df['Metin'].apply(temizle)
 
@@ -38,16 +38,15 @@ X = cv.fit_transform(df['Metin']).toarray()
 y = df['Durum']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, random_state=42)
 
+# Modeli sadece bir kez eğit
+rf = RandomForestClassifier()
+model = rf.fit(X_train, y_train)
+
 # Kullanıcı girişi
 yorum = st.text_area('Yorumunuzu yazın:')
 btn = st.button('Kategorilendir')
 
 if btn:
-    # Model eğitimi
-    rf = RandomForestClassifier()
-    model = rf.fit(X_train, y_train)
-    skor = model.score(X_test, y_test)
-
     # Yorum tahmini
     tahmin = cv.transform([yorum]).toarray()
     kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
@@ -56,6 +55,9 @@ if btn:
 
     # Sonuçları gösterme
     st.subheader(f"Tahmin Edilen Kategori: {s}")
+
+    # Model skoru
+    skor = model.score(X_test, y_test)
     st.write(f"Model Skoru: {skor:.2f}")
 
     # Sonuçları veritabanına kaydetme
@@ -74,5 +76,3 @@ if st.button("Önbelleği Temizle"):
     c.execute("DELETE FROM testler")
     conn.commit()
     st.success("Önbellek temizlendi.")
-
-
