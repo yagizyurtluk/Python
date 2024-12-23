@@ -29,24 +29,14 @@ st.markdown(
         margin: 4px 2px;
         cursor: pointer;
     }
-    .stTextArea textarea {
-        background-color: rgba(255, 255, 255, 0.7);
-        color: black;
-        font-size: 16px;
-        padding: 10px;
-        border-radius: 5px;
-    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Sol panel başlığı
-st.sidebar.title("Metin Analizi ve Kategorilendirme Uygulaması")
-
-# Kullanıcıdan yorum alma ve model işlemleri
-st.title("Yorum Kategorilendirme")
-st.write("Yorumlarınızı girerek kategorisini tahmin edebilirsiniz. Lütfen aşağıdaki alana bir yorum yazın.")
+# Başlık ve sol panel başlığı
+st.title("Metin Analizi ve Kategorilendirme Uygulaması")
+st.sidebar.title("Yorum Kategorilendirme")
 
 # SQLite veritabanı bağlantısı
 zaman = str(datetime.datetime.now())
