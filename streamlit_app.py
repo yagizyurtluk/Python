@@ -1,52 +1,100 @@
 import streamlit as st
-import sqlite3
-import datetime
-from sklearn.feature_extraction.text import CountVectorizer
+import pandas as pd
+import string
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+import sqlite3
+import datetime
 
-# Menü Sayfası
-def menu_page():
-    st.title("Uygulama Menüsü")
-    st.write("Bu uygulama 3 ana bölüme sahiptir:")
-    st.write("- **Yorum Kontrol (Bu Proje)**: Yorumları analiz et")
-    st.write("- **Boy-Kilo Endeksi**: Boy ve kilo bilgisi ile sağlık durumu analizi yap")
-    st.write("- **İletişim**: Proje hakkında geri bildirimde bulun")
+# Arka plan ekleme fonksiyonu
+def add_background(image_url):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background: url("{image_url}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center center;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-# Yorum Kontrol Sayfası
-def yorum_kontrol_page():
-    st.title("Yorum Kontrol")
-    st.write("Yorumları buraya yazın ve kategorilerine göre analiz edelim.")
+# Arka plan görsel URL'si
+background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"
+add_background(background_url)
+
+# Uygulama başlığı
+st.title("Metin Analizi ve Kategorilendirme Uygulaması")
+
+# SQLite veritabanı bağlantısı
+conn = sqlite3.connect('trendyorum.sqlite3')
+c = conn.cursor()
+c.execute("CREATE TABLE IF NOT EXISTS testler(yorum TEXT, sonuc TEXT, zaman TEXT)")
+conn.commit()
+
+# Veriyi yükleme ve temizleme fonksiyonu
+def temizle(sutun):
+    stopwords = ['fakat', 'lakin', 'ancak', 'acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç',
+                 'birşey', 'biz', 'bu', 'çok', 'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem',
+                 'hep', 'hepsi', 'her', 'hiç', 'için', 'ile', 'ise', 'kez', 'ki', 'kim', 'mı', 'mu', 'mü', 'nasıl',
+                 'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki', 'şey', 'siz', 'şu', 'tüm',
+                 've', 'veya', 'ya', 'yani']
+    semboller = string.punctuation
+    sutun = sutun.lower()
+
+    for sembol in semboller:
+        sutun = sutun.replace(sembol, " ")
+    for stopword in stopwords:
+        s = " " + stopword + " "
+        sutun = sutun.replace(s, " ")
+    sutun = sutun.replace("  ", " ")
+    return sutun
+
+# Modeli yükleme ve eğitim
+def train_model(df):
+    cv = CountVectorizer(max_features=300)
+    X = cv.fit_transform(df['Metin']).toarray()
+    y = df['Durum']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, random_state=42)
     
+    rf = RandomForestClassifier()
+    model = rf.fit(X_train, y_train)
+    return model, cv, X_test, y_test
+
+# Yorumları işleme ve tahmin
+def predict_comment(model, cv, yorum):
+    tahmin = cv.transform([yorum]).toarray()
+    kat = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
+    sonuc = model.predict(tahmin)
+    return kat.get(sonuc[0])
+
+# Sol Menü ve Sayfa Seçimi
+def main_page():
+    st.write("Hoşgeldiniz! Burada projeyi yönetebilirsiniz. Sol menüden seçenekleri kullanarak devam edin.")
+
+def yorum_page(model, cv):
+    st.title("Yorum Analizi")
+    st.write("Yorumları buraya girip, kategoriye göre analiz edebilirsiniz.")
     yorum = st.text_area("Yorumunuzu yazın:")
     btn = st.button('Kategorilendir')
 
-    # SQLite veritabanı bağlantısı
-    conn = sqlite3.connect('trendyorum.sqlite3')
-    c = conn.cursor()
-    c.execute("CREATE TABLE IF NOT EXISTS testler(yorum TEXT, sonuc TEXT, zaman TEXT)")
-    conn.commit()
-
     if btn:
-        if yorum.strip() == "":
+        if yorum.strip() == "":  # Yorum boş bırakıldığında uyarı
             st.warning("Lütfen yorumunuzu yazın.")
         else:
-            model, vectorizer = build_model()
+            # Tahmin et
+            sonuc = predict_comment(model, cv, yorum)
+            st.subheader(f"Tahmin Edilen Kategori: {sonuc}")
 
-            # Yorumdan tahmin yapma
-            tahmin = vectorizer.transform([yorum]).toarray()
-            kategoriler = {1: "Olumlu", 0: "Olumsuz", 2: "Nötr"}
-            sonuc = model.predict(tahmin)
-            kategori = kategoriler.get(sonuc[0])
-            st.subheader(f"Tahmin Edilen Kategori: {kategori}")
-
-            # Zaman damgası
-            zaman = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            st.write(f"Analiz Yapılma Zamanı: {zaman}")
-
-            # Yorum ve sonuç veritabanına ekleme
-            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, kategori, zaman))
+            # Veritabanına ekleme
+            zaman = str(datetime.datetime.now())
+            c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, sonuc, zaman))
             conn.commit()
 
             # Geçmiş test sonuçlarını gösterme
@@ -61,62 +109,20 @@ def yorum_kontrol_page():
                 conn.commit()
                 st.success("Önbellek temizlendi.")
 
-    conn.close()
-
-# Boy-Kilo Endeksi Sayfası
-def boy_kilo_endeksi_page():
-    st.title("Boy-Kilo Endeksi Hesaplama")
-    st.write("Boy ve kilonuzu girin, ardından sağlık durumunuzu görelim.")
-    
-    boy = st.number_input("Boy (cm):", min_value=50, max_value=250, value=170)
-    kilo = st.number_input("Kilo (kg):", min_value=20, max_value=300, value=70)
-
-    if boy > 0 and kilo > 0:
-        bmi = kilo / (boy / 100) ** 2
-        st.write(f"Vücut Kitle Endeksiniz (BMI): {bmi:.2f}")
-
-        # Kategoriler
-        if bmi < 18.5:
-            st.write("Durum: Zayıf")
-        elif 18.5 <= bmi < 24.9:
-            st.write("Durum: Normal Kilolu")
-        elif 25 <= bmi < 29.9:
-            st.write("Durum: Kilolu")
-        else:
-            st.write("Durum: Obez")
-    else:
-        st.warning("Lütfen geçerli boy ve kilo değerleri girin.")
-
-# Model ve Vectorizer Kurulumu
-def build_model():
-    # Örnek veri, burada gerçek verinizi kullanmalısınız
-    data = {'Metin': ['Bu film çok güzel', 'Berbat bir film', 'Oldukça sıkıcı', 'Harika bir deneyim'],
-            'Durum': [1, 0, 2, 1]}
-    df = pd.DataFrame(data)
-
-    # Veriyi hazırlama
-    vectorizer = CountVectorizer(max_features=300)
-    X = vectorizer.fit_transform(df['Metin']).toarray()
-    y = df['Durum']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-
-    # Model oluşturma
-    model = RandomForestClassifier()
-    model.fit(X_train, y_train)
-    
-    return model, vectorizer
-
-# Ana Sayfa
+# Ana uygulama
 def main():
-    st.sidebar.title("Sayfa Seçimi")
-    page = st.sidebar.radio("Sayfalar", ("Menü", "Yorum Kontrol (Bu Proje)", "Boy-Kilo Endeksi"))
+    # Veriyi yükle ve modeli eğit
+    df = pd.read_csv('yorum.csv.zip', on_bad_lines='skip', delimiter=";")
+    df['Metin'] = df['Metin'].apply(temizle)
+    model, cv, X_test, y_test = train_model(df)
 
-    if page == "Menü":
-        menu_page()
-    elif page == "Yorum Kontrol (Bu Proje)":
-        yorum_kontrol_page()
-    elif page == "Boy-Kilo Endeksi":
-        boy_kilo_endeksi_page()
+    st.sidebar.title("Sayfa Seçimi")
+    page = st.sidebar.radio("Sayfalar", ("Ana Sayfa", "Yorum Bölümü"))
+
+    if page == "Ana Sayfa":
+        main_page()
+    elif page == "Yorum Bölümü":
+        yorum_page(model, cv)
 
 if __name__ == "__main__":
     main()
