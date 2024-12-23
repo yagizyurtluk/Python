@@ -25,7 +25,7 @@ def add_background(image_url):
     )
 
 # Arka plan görsel URL'si
-background_url = "https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg"
+background_url = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwallpapers.com%2Fpicture%2Fsaturn-pictures-fgtsda9avj9vrshr.html&psig=AOvVaw3YeNp7ve2KJ87l9pBAWYyb&ust=1735047030891000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCIDp-YKAvooDFQAAAAAdAAAAABAJ"
 add_background(background_url)
 
 # Uygulama başlığı
