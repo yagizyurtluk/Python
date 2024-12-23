@@ -74,6 +74,7 @@ def yorum_page():
     yorum = st.text_area("Yorumunuzu yazın:")
     btn = st.button('Kategorilendir')
 
+    # Eğer kullanıcı yorum yazarsa
     if btn:
         if yorum.strip() == "":
             st.warning("Lütfen yorumunuzu yazın.")
@@ -96,17 +97,20 @@ def yorum_page():
             c.execute("INSERT INTO testler VALUES(?,?,?)", (yorum, kategori, zaman))
             conn.commit()
 
-            # Geçmiş test sonuçlarını gösterme
-            c.execute('SELECT * FROM testler')
-            testler = c.fetchall()
-            st.write("Geçmiş Testler:")
-            st.table(testler)
+    # Geçmiş test sonuçlarını gösterme (Her durumda görünsün)
+    c.execute('SELECT * FROM testler')
+    testler = c.fetchall()
+    if testler:
+        st.write("Geçmiş Testler:")
+        st.table(testler)
+    else:
+        st.write("Henüz herhangi bir yorum yapılmadı.")
 
-            # Önbelleği temizleme
-            if st.button("Önbelleği Temizle"):
-                c.execute("DELETE FROM testler")
-                conn.commit()
-                st.success("Önbellek temizlendi.")
+    # Önbelleği temizleme
+    if st.button("Önbelleği Temizle"):
+        c.execute("DELETE FROM testler")
+        conn.commit()
+        st.success("Önbellek temizlendi.")
 
 # Ana Sayfa
 def main_page():
