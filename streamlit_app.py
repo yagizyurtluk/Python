@@ -15,7 +15,7 @@ def add_background(image_url):
         <style>
         .stApp {{
             background: url("{image_url}");
-            background-size: contain; /* Görselin boyutunu ekrana sığdır */
+            background-size: cover;  /* Görseli ekran boyutuna göre sığdır */
             background-repeat: no-repeat;
             background-attachment: fixed;
             background-position: center;
